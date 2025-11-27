@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seismic AI: Oil Discovery Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Chosen Palette: Scientific Slate - A clean, professional palette using light slate backgrounds (#f8fafc) with deep navy (#1e293b) and teal (#0f766e) accents to represent the geological/scientific nature of oil exploration, ensuring high readability and a calm, analytical tone. -->
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin: 0 auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .glass-panel { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .nav-item.active { background-color: #0f766e; color: white; }
+        .pipeline-arrow::after { content: '→'; font-size: 24px; color: #94a3b8; position: absolute; right: -20px; top: 50%; transform: translateY(-50%); }
+        @media (max-width: 1024px) { .pipeline-arrow::after { content: '↓'; right: 50%; top: auto; bottom: -25px; transform: translateX(50%); } }
+        .code-block { background-color: #1e293b; color: #e2e8f0; font-family: 'Fira Code', monospace; }
+        .keyword { color: #c084fc; } .function { color: #38bdf8; } .string { color: #a3e635; } .comment { color: #94a3b8; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <!-- Application Structure Plan: The app uses a dashboard layout with a sticky sidebar (desktop) or top bar (mobile) for navigation. This structure was chosen to allow non-linear exploration of the complex technical proposal. Content is divided into logical modules: 'Mission Control' (Overview), 'Data Core' (Dataset Analysis), 'Pipeline Architecture' (Interactive Flow), 'Methodology' (Algorithm & Processing), and 'Simulation Lab' (Metrics & Implementation). This prioritizes user understanding of the 'Why' (Business Problem) before diving into the 'How' (Technical Implementation), with a custom interactive simulator for the complex IoU metric. -->
+
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center gap-2">
+                        <div class="w-8 h-8 bg-teal-700 rounded-lg flex items-center justify-center text-white font-bold text-lg">S</div>
+                        <span class="font-bold text-xl tracking-tight text-slate-800">Seismic<span class="text-teal-700">AI</span></span>
+                    </div>
+                    <div class="hidden md:ml-10 md:flex md:space-x-8">
+                        <button onclick="scrollToSection('mission-control')" class="nav-item active px-3 py-2 rounded-md text-sm font-medium transition-colors" id="nav-mission">Mission Control</button>
+                        <button onclick="scrollToSection('data-core')" class="nav-item text-slate-600 hover:text-teal-700 hover:bg-slate-100 px-3 py-2 rounded-md text-sm font-medium transition-colors" id="nav-data">Data Core</button>
+                        <button onclick="scrollToSection('pipeline')" class="nav-item text-slate-600 hover:text-teal-700 hover:bg-slate-100 px-3 py-2 rounded-md text-sm font-medium transition-colors" id="nav-pipeline">Pipeline</button>
+                        <button onclick="scrollToSection('methodology')" class="nav-item text-slate-600 hover:text-teal-700 hover:bg-slate-100 px-3 py-2 rounded-md text-sm font-medium transition-colors" id="nav-methodology">Methodology</button>
+                        <button onclick="scrollToSection('simulation')" class="nav-item text-slate-600 hover:text-teal-700 hover:bg-slate-100 px-3 py-2 rounded-md text-sm font-medium transition-colors" id="nav-simulation">Simulation Lab</button>
+                    </div>
+                </div>
+                <div class="flex items-center md:hidden">
+                    <button id="mobile-menu-btn" class="text-slate-500 hover:text-slate-700 focus:outline-none">
+                        <span class="sr-only">Open menu</span>
+                        <div class="text-2xl">≡</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <button onclick="scrollToSection('mission-control')" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">Mission Control</button>
+                <button onclick="scrollToSection('data-core')" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">Data Core</button>
+                <button onclick="scrollToSection('pipeline')" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">Pipeline</button>
+                <button onclick="scrollToSection('methodology')" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">Methodology</button>
+                <button onclick="scrollToSection('simulation')" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-50">Simulation Lab</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Visualization & Content Choices: 
+        1. Mission Control: Uses text cards for core problems/goals to provide immediate context. 
+        2. Data Core: Uses a Donut Chart to visualize class imbalance (key report insight) and stats cards for dataset metadata.
+        3. Pipeline: HTML/Flexbox flow diagram allows interaction (clicking stages) to reveal tech stack details without SVG.
+        4. Methodology: Accordion style for pre-processing/features to save space. 
+        5. Simulation Lab: A custom Canvas-based interactive tool to visualize 'IoU' (Intersection over Union). This was chosen because the report emphasizes this metric is critical for business success, and a static text explanation is insufficient for understanding spatial overlap. 
+        6. Implementation: Code block with syntax highlighting for the required pseudo-code.
+    -->
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-16">
+
+        <!-- SECTION 1: MISSION CONTROL -->
+        <section id="mission-control" class="scroll-mt-24">
+            <div class="mb-6">
+                <h1 class="text-3xl font-bold text-slate-900 mb-4">Mission Control: Executive Summary</h1>
+                <p class="text-lg text-slate-600 max-w-4xl">
+                    Welcome to the AI-Enhanced Seismic Interpretation platform. This dashboard outlines our strategy to revolutionize oil exploration by leveraging Deep Learning on petabyte-scale seismic data. Our primary directive is to eliminate subjective manual interpretation and reduce the risk of costly dry wells.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Business Problem Card -->
+                <div class="glass-panel p-6 rounded-xl border-l-4 border-red-500 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-slate-800">The Problem</h3>
+                        <span class="text-2xl">⚠️</span>
+                    </div>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Traditional manual interpretation is slow, subjective, and error-prone. It fails to detect subtle geological anomalies, leading to failed drilling projects and wasted capital.
+                    </p>
+                </div>
+
+                <!-- The Solution Card -->
+                <div class="glass-panel p-6 rounded-xl border-l-4 border-teal-500 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-slate-800">The Solution</h3>
+                        <span class="text-2xl">🧠</span>
+                    </div>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        An end-to-end Big Data pipeline using 3D U-Net Deep Learning models to automatically segment subsurface features, providing a Probabilistic Hydrocarbon Map.
+                    </p>
+                </div>
+
+                <!-- The Scope Card -->
+                <div class="glass-panel p-6 rounded-xl border-l-4 border-blue-500 hover:shadow-lg transition-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-slate-800">The Scope</h3>
+                        <span class="text-2xl">🌐</span>
+                    </div>
+                    <p class="text-slate-600 text-sm leading-relaxed">
+                        Processing petabyte-scale unstructured 3D/4D seismic data volumes to pinpoint reservoir locations with pixel-level precision.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: DATA CORE -->
+        <section id="data-core" class="scroll-mt-24">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <span class="text-teal-600">II.</span> Data Core & Reconnaissance
+                </h2>
+                <p class="text-slate-600 mt-2">
+                    Analysis of the TGS Salt Identification Challenge dataset, serving as our proxy for real-world complexity. This section highlights the structural challenges of the data we must overcome.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <!-- Dataset Metadata -->
+                <div class="glass-panel p-6 rounded-xl">
+                    <h3 class="font-bold text-slate-800 mb-4 border-b pb-2">Dataset Specifications</h3>
+                    <ul class="space-y-4">
+                        <li class="flex justify-between items-center">
+                            <span class="text-slate-500 font-medium">Source</span>
+                            <span class="text-slate-900 font-semibold bg-slate-100 px-2 py-1 rounded">TGS Salt Identification (Kaggle)</span>
+                        </li>
+                        <li class="flex justify-between items-center">
+                            <span class="text-slate-500 font-medium">Type</span>
+                            <span class="text-slate-900 font-semibold text-right">Unstructured Seismic Imagery<br><span class="text-xs text-slate-400 font-normal">3D Spatial + Time/Depth</span></span>
+                        </li>
+                        <li class="flex justify-between items-center">
+                            <span class="text-slate-500 font-medium">Link</span>
+                            <a href="https://www.kaggle.com/competitions/tgs-salt-identification-challenge/data" target="_blank" class="text-teal-600 hover:text-teal-800 font-semibold underline text-sm">Access Repository ↗</a>
+                        </li>
+                    </ul>
+
+                    <div class="mt-8 p-4 bg-amber-50 rounded-lg border border-amber-100">
+                        <h4 class="text-amber-800 font-bold mb-2 text-sm uppercase tracking-wide">Critical Challenge: Imbalance</h4>
+                        <p class="text-amber-700 text-sm">
+                            Salt bodies (potential reservoirs) occupy a tiny percentage of the total subsurface volume. Standard accuracy metrics will fail here; a model predicting "No Salt" everywhere would be 95% accurate but useless.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Imbalance Visualization -->
+                <div class="glass-panel p-6 rounded-xl flex flex-col items-center">
+                    <h3 class="font-bold text-slate-800 mb-2">Class Distribution Analysis</h3>
+                    <p class="text-xs text-slate-500 mb-6 text-center">Visualizing the extreme scarcity of target features (Salt) vs Background (Sediment)</p>
+                    <div class="chart-container">
+                        <canvas id="imbalanceChart"></canvas>
+                    </div>
+                    <div class="mt-4 flex gap-4 text-sm">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-slate-300"></div>
+                            <span class="text-slate-600">Sediment (Background)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-teal-600"></div>
+                            <span class="text-slate-600 font-bold">Salt (Target)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: PIPELINE ARCHITECTURE -->
+        <section id="pipeline" class="scroll-mt-24">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <span class="text-teal-600">III.</span> Pipeline Architecture
+                </h2>
+                <p class="text-slate-600 mt-2">
+                    An interactive blueprint of our Big Data HPC design. Click on any stage in the flow diagram below to inspect the technology stack and processes involved.
+                </p>
+            </div>
+
+            <!-- Interactive Pipeline Diagram -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-8">
+                <div class="flex flex-col lg:flex-row justify-between items-center gap-4 lg:gap-0 relative mb-12">
+                    <!-- Line connector (desktop only) -->
+                    <div class="hidden lg:block absolute top-1/2 left-0 w-full h-1 bg-slate-200 -z-10 transform -translate-y-1/2"></div>
+
+                    <!-- Stage 1 -->
+                    <button onclick="updatePipelineDetails(0)" class="pipeline-btn group relative flex flex-col items-center bg-white p-4 rounded-xl border-2 border-teal-600 shadow-md hover:shadow-lg transition-all z-10 w-full lg:w-48">
+                        <div class="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">📥</div>
+                        <h3 class="font-bold text-slate-800">Ingestion</h3>
+                        <div class="text-xs text-slate-500">Batch Loading</div>
+                        <div class="hidden lg:block absolute -right-6 top-1/2 transform -translate-y-1/2 text-slate-300 text-xl">→</div>
+                    </button>
+
+                    <!-- Stage 2 -->
+                    <button onclick="updatePipelineDetails(1)" class="pipeline-btn group relative flex flex-col items-center bg-white p-4 rounded-xl border-2 border-slate-200 hover:border-teal-600 shadow-sm hover:shadow-lg transition-all z-10 w-full lg:w-48">
+                        <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">💾</div>
+                        <h3 class="font-bold text-slate-800">Storage</h3>
+                        <div class="text-xs text-slate-500">Data Lake</div>
+                        <div class="hidden lg:block absolute -right-6 top-1/2 transform -translate-y-1/2 text-slate-300 text-xl">→</div>
+                    </button>
+
+                    <!-- Stage 3 -->
+                    <button onclick="updatePipelineDetails(2)" class="pipeline-btn group relative flex flex-col items-center bg-white p-4 rounded-xl border-2 border-slate-200 hover:border-teal-600 shadow-sm hover:shadow-lg transition-all z-10 w-full lg:w-48">
+                        <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">⚙️</div>
+                        <h3 class="font-bold text-slate-800">Processing</h3>
+                        <div class="text-xs text-slate-500">HPC & GPU</div>
+                        <div class="hidden lg:block absolute -right-6 top-1/2 transform -translate-y-1/2 text-slate-300 text-xl">→</div>
+                    </button>
+
+                    <!-- Stage 4 -->
+                    <button onclick="updatePipelineDetails(3)" class="pipeline-btn group relative flex flex-col items-center bg-white p-4 rounded-xl border-2 border-slate-200 hover:border-teal-600 shadow-sm hover:shadow-lg transition-all z-10 w-full lg:w-48">
+                        <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-2xl mb-2 group-hover:scale-110 transition-transform">📊</div>
+                        <h3 class="font-bold text-slate-800">Visualization</h3>
+                        <div class="text-xs text-slate-500">Interpretation</div>
+                    </button>
+                </div>
+
+                <!-- Detail View Panel -->
+                <div id="pipeline-detail-panel" class="bg-slate-50 rounded-lg border border-slate-200 p-6 transition-all duration-300">
+                    <h3 id="pipeline-stage-title" class="text-xl font-bold text-slate-900 mb-2">Ingestion Layer</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-500 uppercase mb-2">Tools & Tech</h4>
+                            <ul id="pipeline-tools" class="space-y-2 text-slate-700">
+                                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-teal-500 rounded-full"></span>PySpark</li>
+                                <li class="flex items-center gap-2"><span class="w-2 h-2 bg-teal-500 rounded-full"></span>Apache NiFi</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-500 uppercase mb-2">Key Process</h4>
+                            <p id="pipeline-process" class="text-slate-600 text-sm leading-relaxed">
+                                Raw SEG-Y files are transferred and converted into partitioned Zarr arrays to enable distributed, parallel reading across the cluster.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: METHODOLOGY -->
+        <section id="methodology" class="scroll-mt-24">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <span class="text-teal-600">IV.</span> Methodology & Algorithmic Core
+                </h2>
+                <p class="text-slate-600 mt-2">
+                    Our approach uses a 3D U-Net Deep Learning architecture tailored for volumetric segmentation. Explore the methodology steps below.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Methodology Steps Accordion -->
+                <div class="lg:col-span-1 space-y-4">
+                    <div onclick="toggleMethodology(0)" class="method-card cursor-pointer bg-white p-4 rounded-lg border border-slate-200 shadow-sm hover:border-teal-500 transition-colors active-method border-l-4 border-l-teal-600">
+                        <h3 class="font-bold text-slate-800">1. Pre-Processing Strategy</h3>
+                        <p class="text-xs text-slate-500 mt-1">Cleaning and Formatting</p>
+                    </div>
+                    <div onclick="toggleMethodology(1)" class="method-card cursor-pointer bg-white p-4 rounded-lg border border-slate-200 shadow-sm hover:border-teal-500 transition-colors border-l-4 border-l-transparent">
+                        <h3 class="font-bold text-slate-800">2. Feature Engineering</h3>
+                        <p class="text-xs text-slate-500 mt-1">Enhancing Signal</p>
+                    </div>
+                    <div onclick="toggleMethodology(2)" class="method-card cursor-pointer bg-white p-4 rounded-lg border border-slate-200 shadow-sm hover:border-teal-500 transition-colors border-l-4 border-l-transparent">
+                        <h3 class="font-bold text-slate-800">3. The 3D U-Net Model</h3>
+                        <p class="text-xs text-slate-500 mt-1">Core Algorithm</p>
+                    </div>
+                </div>
+
+                <!-- Methodology Content -->
+                <div class="lg:col-span-2 glass-panel p-8 rounded-xl min-h-[300px] flex flex-col justify-center">
+                    <div id="method-content-0" class="method-content">
+                        <h3 class="text-xl font-bold text-slate-900 mb-4">Pre-Processing Strategy</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-xs mt-1">A</div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800">Handling Missing Values</h4>
+                                    <p class="text-sm text-slate-600">Gaps in traces are handled via interpolation based on adjacent points or zero-padding during cube creation.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-xs mt-1">B</div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800">Categorical Encoding</h4>
+                                    <p class="text-sm text-slate-600">Geological labels (Salt/Sediment) are converted using One-Hot Encoding on pixel-level masks.</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <div class="w-6 h-6 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-xs mt-1">C</div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800">Scaling</h4>
+                                    <p class="text-sm text-slate-600">Seismic amplitudes are normalized (Min-Max) to [0, 1] to ensure stability and convergence of the CNN.</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div id="method-content-1" class="method-content hidden">
+                        <h3 class="text-xl font-bold text-slate-900 mb-4">Feature Engineering</h3>
+                        <p class="text-slate-600 mb-4">We do not just rely on raw data. We enhance the seismic signal to highlight geological structures.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                                <h4 class="font-bold text-slate-800 mb-2">Spectral Attributes</h4>
+                                <p class="text-sm text-slate-600">Analyzing different frequency bands to highlight thin beds and stratigraphy.</p>
+                            </div>
+                            <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                                <h4 class="font-bold text-slate-800 mb-2">Geometric Attributes</h4>
+                                <p class="text-sm text-slate-600">Calculating local dip, azimuth, and curvature to enhance visibility of faults and fractures.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="method-content-2" class="method-content hidden">
+                        <h3 class="text-xl font-bold text-slate-900 mb-4">3D U-Net Architecture</h3>
+                        <p class="text-slate-600 mb-6">
+                            The U-Net was selected for its ability to produce <span class="font-bold text-teal-700">pixel-by-pixel classification maps</span> (Semantic Segmentation).
+                        </p>
+                        <div class="flex flex-col gap-4">
+                            <div class="flex items-center gap-4 p-4 border rounded-lg border-teal-200 bg-teal-50">
+                                <span class="text-2xl">🧊</span>
+                                <div>
+                                    <h4 class="font-bold text-teal-900">3D/4D Capabilities</h4>
+                                    <p class="text-sm text-teal-800">Unlike 2D models, 3D U-Net leverages depth and sequential context, treating the subsurface as a continuous volume.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4 p-4 border rounded-lg border-slate-200 bg-white">
+                                <span class="text-2xl">🎯</span>
+                                <div>
+                                    <h4 class="font-bold text-slate-800">Precision</h4>
+                                    <p class="text-sm text-slate-600">Accurately delineates boundaries, essential for distinguishing salt domes from valuable hydrocarbon traps.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: SIMULATION LAB (METRICS & CODE) -->
+        <section id="simulation" class="scroll-mt-24 mb-24">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <span class="text-teal-600">V.</span> Simulation & Implementation Lab
+                </h2>
+                <p class="text-slate-600 mt-2">
+                    Understand the critical metric "IoU" through interaction, and review the implementation logic.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                <!-- IoU Simulator -->
+                <div class="glass-panel p-6 rounded-xl">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-bold text-slate-800">Metric Simulator: IoU (Intersection over Union)</h3>
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2 py-1 rounded">Interactive</span>
+                    </div>
+                    <p class="text-sm text-slate-600 mb-4">
+                        <strong>Why IoU?</strong> In drilling, missing the target by 10 meters is a failure. Accuracy is misleading in imbalanced data. IoU measures physical overlap. <br><br>
+                        <span class="text-slate-500 italic">Drag the sliders to move the "Predicted" reservoir (Blue) over the "Ground Truth" reservoir (Green).</span>
+                    </p>
+
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 flex flex-col items-center">
+                        <div class="relative w-full h-64 bg-white border border-slate-300 rounded overflow-hidden cursor-crosshair mb-4" id="iou-container">
+                            <canvas id="iouCanvas" width="400" height="250" class="w-full h-full"></canvas>
+                        </div>
+                        
+                        <div class="w-full space-y-4">
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase flex justify-between">
+                                    X Offset <span id="x-val">0</span>
+                                </label>
+                                <input type="range" id="x-slider" min="-100" max="100" value="50" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-teal-600">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase flex justify-between">
+                                    Y Offset <span id="y-val">0</span>
+                                </label>
+                                <input type="range" id="y-slider" min="-80" max="80" value="30" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-teal-600">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-4 bg-slate-800 text-white rounded-lg flex justify-between items-center">
+                        <span class="font-mono text-sm">Calculated IoU Score:</span>
+                        <span id="iou-score" class="font-mono text-2xl font-bold text-teal-400">0.00</span>
+                    </div>
+                </div>
+
+                <!-- Code Implementation -->
+                <div class="glass-panel p-6 rounded-xl flex flex-col">
+                    <h3 class="font-bold text-slate-800 mb-4">Implementation Logic</h3>
+                    <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-mono rounded border">PySpark</span>
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-mono rounded border">TensorFlow</span>
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-mono rounded border">Horovod</span>
+                        <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs font-mono rounded border">Zarr</span>
+                    </div>
+                    
+                    <div class="flex-grow bg-slate-900 rounded-lg p-4 overflow-auto max-h-[400px]">
+<pre class="code-block text-xs sm:text-sm leading-relaxed">
+<span class="keyword">function</span> <span class="function">TRAIN_SEISMIC_MODEL</span>():
+    <span class="comment"># 1. Load Data (Distributed via PySpark/Dask)</span>
+    DATA_CUBES = <span class="function">Load_3D_Seismic_Patches</span>(source=<span class="string">"HDFS_Processed_Store"</span>)
+   
+    <span class="comment"># 2. Preprocess & Scaling</span>
+    X_SCALED = <span class="function">Normalize_Amplitudes</span>(DATA_CUBES[<span class="string">"seismic_data"</span>])
+    Y_MASKS = DATA_CUBES[<span class="string">"label_masks"</span>] 
+
+    <span class="comment"># 3. Split Train/Test (Spatially distinct)</span>
+    X_TRAIN, X_TEST, Y_TRAIN, Y_TEST = <span class="function">Split_Data_Spatially</span>(X_SCALED, Y_MASKS, ratio=0.8)
+
+    <span class="comment"># 4. Initialize & Train Model</span>
+    MODEL = <span class="function">Initialize_3D_UNet</span>(input_shape=(64, 64, 64, 1))
+    
+    <span class="comment"># Compile with Focal Loss for imbalance</span>
+    MODEL.<span class="function">compile</span>(loss=<span class="string">"Focal Loss"</span>, optimizer=<span class="string">"Adam"</span>)
+   
+    <span class="comment"># Distributed Training (Horovod)</span>
+    MODEL.<span class="function">fit_distributed</span>(
+        X_TRAIN, Y_TRAIN, 
+        epochs=100, 
+        cluster_size=<span class="string">"GPU_A100_Cluster"</span>
+    )
+
+    <span class="comment"># 5. Evaluate</span>
+    Y_PRED = MODEL.<span class="function">predict_on_full_volume</span>(TEST_SEISMIC_VOLUME)
+    METRICS = <span class="function">Calculate_Segmentation_Metrics</span>(Y_TEST, Y_PRED)
+
+    <span class="comment"># 6. Save & Deploy</span>
+    <span class="function">Save_Model</span>(MODEL, location=<span class="string">"Model_Registry"</span>)
+    <span class="function">Deploy_Model</span>(MODEL, target=<span class="string">"Inference_Service_Cluster"</span>)
+</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="mb-4 font-bold text-slate-200">SeismicAI Proposal</p>
+            <p class="text-sm">Generated for Oil Exploration & Discovery Assignment.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Navigation Logic ---
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+                updateActiveNav(id);
+            }
+            // Close mobile menu if open
+            document.getElementById('mobile-menu').classList.add('hidden');
+        }
+
+        function updateActiveNav(activeId) {
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.classList.remove('active', 'bg-teal-700', 'text-white');
+                btn.classList.add('text-slate-600');
+                
+                // Add hover classes back
+                btn.classList.add('hover:text-teal-700', 'hover:bg-slate-100');
+
+                if (btn.id === `nav-${activeId}` || (activeId === 'mission-control' && btn.id === 'nav-mission')) {
+                    btn.classList.add('active');
+                    btn.classList.remove('text-slate-600', 'hover:text-teal-700', 'hover:bg-slate-100');
+                }
+            });
+        }
+
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+
+        // --- Chart.js: Class Imbalance ---
+        const ctx = document.getElementById('imbalanceChart').getContext('2d');
+        const imbalanceChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Sediment (Background)', 'Salt (Target)'],
+                datasets: [{
+                    data: [98.5, 1.5], // Simulating the "Highly Imbalanced" nature (tiny %)
+                    backgroundColor: ['#cbd5e1', '#0f766e'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.label}: ${context.raw}% Volume`;
+                            }
+                        }
+                    }
+                },
+                cutout: '75%'
+            }
+        });
+
+        // --- Pipeline Interactivity ---
+        const pipelineData = [
+            {
+                title: "Ingestion Layer",
+                tools: ["PySpark", "Apache NiFi"],
+                process: "Raw SEG-Y files are transferred and converted into an optimized, distributed file format (e.g., partitioned Zarr arrays) to enable parallel reading across the compute cluster."
+            },
+            {
+                title: "Storage Layer",
+                tools: ["HDFS (Hadoop)", "AWS S3", "Distributed KV Stores"],
+                process: "Scalable storage is crucial. Raw data lives in HDFS/S3 (Immutable). Processed attributes and prediction volumes live in the Feature Store for high-speed access."
+            },
+            {
+                title: "Processing Layer",
+                tools: ["PySpark (Orchestration)", "Dask", "Horovod", "GPU Clusters"],
+                process: "Computationally intensive phase. Distributed jobs perform noise reduction and attribute extraction. Model training is managed across GPU instances."
+            },
+            {
+                title: "Visualization Layer",
+                tools: ["Petrel", "Plotly", "Matplotlib"],
+                process: "Results are visualized as interactive 3D render projections, overlaying the model's prediction mask on the seismic volume to highlight reservoirs."
+            }
+        ];
+
+        function updatePipelineDetails(index) {
+            const data = pipelineData[index];
+            const titleEl = document.getElementById('pipeline-stage-title');
+            const toolsEl = document.getElementById('pipeline-tools');
+            const processEl = document.getElementById('pipeline-process');
+            const btns = document.querySelectorAll('.pipeline-btn');
+
+            // Style active button
+            btns.forEach((btn, i) => {
+                if (i === index) {
+                    btn.classList.remove('border-slate-200');
+                    btn.classList.add('border-teal-600', 'ring-2', 'ring-teal-100');
+                } else {
+                    btn.classList.add('border-slate-200');
+                    btn.classList.remove('border-teal-600', 'ring-2', 'ring-teal-100');
+                }
+            });
+
+            // Update content with fade effect
+            const panel = document.getElementById('pipeline-detail-panel');
+            panel.classList.add('opacity-50');
+            
+            setTimeout(() => {
+                titleEl.textContent = data.title;
+                processEl.textContent = data.process;
+                
+                toolsEl.innerHTML = data.tools.map(tool => 
+                    `<li class="flex items-center gap-2"><span class="w-2 h-2 bg-teal-500 rounded-full"></span>${tool}</li>`
+                ).join('');
+                
+                panel.classList.remove('opacity-50');
+            }, 200);
+        }
+        
+        // Initialize pipeline view
+        updatePipelineDetails(0);
+
+        // --- Methodology Toggle ---
+        function toggleMethodology(index) {
+            const contents = document.querySelectorAll('.method-content');
+            const cards = document.querySelectorAll('.method-card');
+
+            contents.forEach((content, i) => {
+                if (i === index) {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
+                }
+            });
+
+            cards.forEach((card, i) => {
+                if (i === index) {
+                    card.classList.add('border-l-teal-600');
+                    card.classList.remove('border-l-transparent');
+                } else {
+                    card.classList.remove('border-l-teal-600');
+                    card.classList.add('border-l-transparent');
+                }
+            });
+        }
+
+        // --- IoU Simulator (Canvas) ---
+        const canvas = document.getElementById('iouCanvas');
+        const c = canvas.getContext('2d');
+        const xSlider = document.getElementById('x-slider');
+        const ySlider = document.getElementById('y-slider');
+        const xVal = document.getElementById('x-val');
+        const yVal = document.getElementById('y-val');
+        const scoreDisplay = document.getElementById('iou-score');
+
+        // Fixed Ground Truth Box (Green)
+        const truth = { x: 150, y: 75, w: 100, h: 100 };
+        
+        function draw() {
+            // Clear
+            c.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Get Prediction Box (Blue) based on sliders
+            const offsetX = parseInt(xSlider.value);
+            const offsetY = parseInt(ySlider.value);
+            
+            xVal.textContent = offsetX;
+            yVal.textContent = offsetY;
+
+            const pred = { 
+                x: truth.x + offsetX, 
+                y: truth.y + offsetY, 
+                w: 100, 
+                h: 100 
+            };
+
+            // Calculate Intersection
+            const x_overlap = Math.max(0, Math.min(truth.x + truth.w, pred.x + pred.w) - Math.max(truth.x, pred.x));
+            const y_overlap = Math.max(0, Math.min(truth.y + truth.h, pred.y + pred.h) - Math.max(truth.y, pred.y));
+            const intersectionArea = x_overlap * y_overlap;
+
+            // Calculate Union
+            const truthArea = truth.w * truth.h;
+            const predArea = pred.w * pred.h;
+            const unionArea = truthArea + predArea - intersectionArea;
+
+            // IoU
+            const iou = unionArea === 0 ? 0 : intersectionArea / unionArea;
+            scoreDisplay.textContent = iou.toFixed(2);
+
+            // Draw Truth
+            c.fillStyle = 'rgba(16, 185, 129, 0.3)'; // Green
+            c.strokeStyle = '#059669';
+            c.lineWidth = 2;
+            c.fillRect(truth.x, truth.y, truth.w, truth.h);
+            c.strokeRect(truth.x, truth.y, truth.w, truth.h);
+            c.fillStyle = '#059669';
+            c.font = '12px sans-serif';
+            c.fillText('Ground Truth', truth.x, truth.y - 5);
+
+            // Draw Prediction
+            c.fillStyle = 'rgba(14, 165, 233, 0.3)'; // Blue
+            c.strokeStyle = '#0284c7';
+            c.lineWidth = 2;
+            c.fillRect(pred.x, pred.y, pred.w, pred.h);
+            c.strokeRect(pred.x, pred.y, pred.w, pred.h);
+            c.fillStyle = '#0284c7';
+            c.fillText('Model Prediction', pred.x, pred.y + pred.h + 15);
+
+            // Draw Intersection Pattern
+            if (intersectionArea > 0) {
+                const ix = Math.max(truth.x, pred.x);
+                const iy = Math.max(truth.y, pred.y);
+                
+                c.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                c.fillRect(ix, iy, x_overlap, y_overlap);
+                c.strokeStyle = '#ffffff';
+                c.strokeRect(ix, iy, x_overlap, y_overlap);
+            }
+        }
+
+        xSlider.addEventListener('input', draw);
+        ySlider.addEventListener('input', draw);
+        
+        // Initial Draw
+        draw();
+
+    </script>
+</body>
+</html>
